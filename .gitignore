@@ -1,0 +1,5 @@
+config.json
+.directory
+.vscode
+fix_image.py
+__pycache__
