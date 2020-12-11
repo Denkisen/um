@@ -52,6 +52,9 @@ def build_db_of_features(dir, db_name, model):
             db_cur.execute(sql)
             db.commit()
             val = db_cur.fetchone()
+            if val is None:
+                print ("Error: " + filename)
+                exit()
             if val[3] != 'no':
                 continue
             try:

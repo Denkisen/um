@@ -12,13 +12,13 @@ class STasks:
     self.config_name = "config.conf"
     self.GetAllFiles(dir)
     random.shuffle(self.files)
-    self.Test()
+    #self.Test()
     
   def GetAllFiles(self, dir):
     self.files = []
     for root, directories, filenames in os.walk(dir):
       for filename in filenames:
-        if str.lower(os.path.splitext(filename)[-1]) in ['.bmp', '.jpg', '.png', '.gif', '.webm', '.mp4']: 
+        if str.lower(os.path.splitext(filename)[-1]) in ['.bmp', '.jpg', '.png', '.jpeg', '.gif', '.webm', '.mp4']: 
           self.files.append(os.path.join(root, filename))
 
   def Test(self):

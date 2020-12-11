@@ -43,7 +43,7 @@ running = True
 pause = False
 video_playing = False
 flip_timer = 0
-timeout = 2
+timeout = 6
 
 beep.PlayInLoop()
 

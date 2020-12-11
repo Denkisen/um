@@ -60,10 +60,9 @@ void Um::AddFile(const QString file_path)
     OpenDB();
     QStringList all = file_path.split("/");
     QSqlQuery query;
-    query.prepare("SELECT tags FROM files WHERE name = ? AND path LIKE ?_");
+    query.prepare("SELECT tags FROM files WHERE name = ?");
     query.bindValue(0, all.last());
-    all.pop_back();
-    query.bindValue(1, all.join("/"));
+
     if (!query.exec())
         throw std::runtime_error("Select Query error");
 

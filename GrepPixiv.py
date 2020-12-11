@@ -16,7 +16,7 @@ f = open("config.json", "r")
 conf = json.load(f)
 DB_NAME = conf["DB_NAME"]
 DB_PATH = conf["DB_PATH"]
-DOWNLOAD_DIR = Path(conf["DOWNLOAD_DIR"])
+DOWNLOAD_DIR = Path(os.path.join(conf["DOWNLOAD_DIR"], "New"))
 PIXIV_TOKEN = conf["PIXIV_TOKEN"]
 f.close()
 
@@ -38,8 +38,8 @@ while True:
     db_cur.execute(sql)
     db.commit()
     
-    # if ill.id == 84310892:
-      # skip = False
+    #if ill.id == 56256057:
+      #skip = False
       
     if db_cur.fetchone() is not None:
       if skip:
@@ -56,10 +56,13 @@ while True:
 
     file_name = []
     if ill.page_count == 1:
-      file_name.append(str (ill.image_urls[Size.ORIGINAL]).split('/')[-1].replace("_p0", ""))
+      ec = str (ill.image_urls[Size.ORIGINAL]).split('/')[-1].split(".")[-1]
+      file_name.append(str (ill.image_urls[Size.ORIGINAL]).split('/')[-1].split("_")[0] + "." + ec)
 
     for p in ill.meta_pages:
-      file_name.append(str (p[Size.ORIGINAL]).split('/')[-1])
+      name = str (p[Size.ORIGINAL]).split('/')[-1]
+      print("File:%s" % name)
+      file_name.append(name)
     
 
     ill.download(directory=DOWNLOAD_DIR, size=Size.ORIGINAL)

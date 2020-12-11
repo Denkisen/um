@@ -41,4 +41,5 @@ def check_value(db, db_cur, table_name, field_name, value):
 def update_record_in_table(db_cur, table_name, key_field_name, src_field_name, key_field_value, new_src_field_value):
   db_cur.execute("""UPDATE %s SET %s = '%s' WHERE %s = '%s'""" % (table_name, src_field_name, new_src_field_value, key_field_name, key_field_value))
 
-#make_table(db_cur, DB_PATH, "files", ["name text", "path text, tags text, features text"])
+db, db_cur = connect(DB_PATH, DB_NAME)
+make_table(db_cur, DB_PATH, "files", ["name text", "path text, tags text, features text"])

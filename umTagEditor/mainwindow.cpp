@@ -52,6 +52,7 @@ void MainWindow::on_actionOpen_DB_triggered()
     QFileDialog open_db(this);
     open_db.setFileMode(QFileDialog::FileMode::ExistingFile);
     open_db.setViewMode(QFileDialog::Detail);
+    open_db.setOption(QFileDialog::DontUseNativeDialog, true);
     if (open_db.exec())
         db = std::make_unique<Um>(open_db.selectedFiles().first());
     if (db.get() != nullptr)
@@ -93,7 +94,8 @@ void MainWindow::on_actionOpen_File_triggered()
     QFileDialog open_db(this);
     open_db.setFileMode(QFileDialog::FileMode::ExistingFiles);
     open_db.setViewMode(QFileDialog::Detail);
-    open_db.setNameFilter(tr("Images (*.png *.bmp *.jpg)"));
+    open_db.setOption(QFileDialog::DontUseNativeDialog, true);
+    open_db.setNameFilter(tr("Images (*.png *.bmp *.jpg *.jpeg)"));
 
     if (open_db.exec() && db.get() != nullptr)
     {
@@ -164,7 +166,7 @@ void MainWindow::on_actionOpen_Directory_triggered()
         for (auto &d : dirs)
         {
            QDir directory(d);
-           auto tmp = directory.entryList(QStringList() << "*.jpg" << "*.JPG" << "*.png" << "*.PNG" << "*.bmp" << "*.BMP" , QDir::Files);
+           auto tmp = directory.entryList(QStringList() << "*.jpg" << "*.JPG" << "*.png" << "*.PNG" << "*.bmp" << "*.BMP" << "*.jpeg" << "*.JPEG", QDir::Files);
            for (auto &t: tmp) t = d + "/" + t;
            files.append(tmp);
         }
@@ -216,6 +218,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             }
         }
     }
+    return true;
 }
 
 QPixmap MainWindow::OpenImage(QString file_name, uint32_t w, uint32_t h)

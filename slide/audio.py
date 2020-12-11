@@ -16,11 +16,11 @@ class SAudio():
     self.counter = 0
     self.max = 120
     self.speed_range = [
-        [0.1, 120], 
-        [0.35, 120], 
-        [0.5, 120], 
+        [1.75, 120], 
         [0.75, 120], 
-        [1.0, 120]]
+        [1.0, 120],
+        [2.0, 60]
+        ]
     self.beep_thread = None
 
   def Stop(self):
