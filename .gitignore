@@ -2,4 +2,6 @@ config.json
 .directory
 .vscode
 fix_image.py
+log.txt
 __pycache__
+build-umTagEditor-Desktop-*

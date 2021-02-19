@@ -41,7 +41,7 @@ class DowSankaku():
       resp = self.__conn.get(text, stream=False)
       while resp.status_code == 500 or resp.status_code == 429:
         print("Wait 500 or 429")
-        time.sleep(60)
+        time.sleep(120)
         resp = self.__conn.get(text, stream=False)
     except:
       print("Send Request Error")
@@ -54,7 +54,7 @@ class DowSankaku():
       resp = self.__conn.get(text, stream=True)
       while resp.status_code == 500 or resp.status_code == 429:
         print("Wait 500 or 429")
-        time.sleep(60)
+        time.sleep(120)
         resp = self.__conn.get(text, stream=True)
     except:
       print("Send Request Error")
@@ -76,6 +76,9 @@ class DowSankaku():
                             [str(item.src).split("/")[-1]], 
                             " ".join(str(item.title).replace("'", "''").split(" ")[:-4])])
 
+    if len(self.__files) == 0:
+      print("no data")
+      self.__page_data = ""
     if self.__page_data != "":
       print("Page: %i" % self.__page)
       self.__page += 1
@@ -109,4 +112,3 @@ class DowSankaku():
       return True
     else:
       return False
-

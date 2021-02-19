@@ -15,11 +15,13 @@ f.close()
 
 db = sqlite3.connect(os.path.join(DB_PATH, DB_NAME))
 db_cur = db.cursor()
-
-sql = "SELECT tags FROM files WHERE name = '%s'" % sys.argv[1]
+sql = "SELECT * FROM files WHERE name LIKE '%s'" % ('%' + sys.argv[1] + '%')
 db_cur.execute(sql)
 db.commit()
-
-print(db_cur.fetchone()[0])
+o = db_cur.fetchone()
+if o is not None:
+  print(o[2])
+else:
+  print("None")
 db.close()
 
