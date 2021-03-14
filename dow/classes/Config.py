@@ -2,8 +2,8 @@ import json
 import pathlib
 
 class DowConfig():
-  def __init__(self):
-    f = pathlib.Path(".").joinpath("config.json").open("r")
+  def __init__(self, config_file_path):
+    f = pathlib.Path(config_file_path).open("r")
     conf = json.load(f)
     self.DB_NAME = conf["DB_NAME"]
     self.DUPS = conf["DUPS"]
@@ -17,4 +17,6 @@ class DowConfig():
     self.SLIDE_CONFIG = conf["SLIDE_CONFIG"]
     self.PIXIV_TOKEN = conf["PIXIV_TOKEN"]
     self.WHITE_LIST = conf["WHITE_LIST"]
+    self.ADD_FOLDER = conf["ADD_FOLDER"]
+    self.UNSORTED_FOLDER = conf["UNSORTED_FOLDER"]
     f.close()

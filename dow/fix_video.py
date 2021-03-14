@@ -10,7 +10,7 @@ from multiprocessing import Process
 config = DowConfig(pathlib.Path(".").joinpath("config.json"))
 db = DowDatabase(config.ROOT_DIR, config.DB_NAME)
 download_dir = pathlib.Path(config.ROOT_DIR).joinpath(config.DOWNLOAD_FOLDER)
-sankaku = DowSankaku(config.SAN_USER, config.SAN_PASSWORD, download_dir, config.SAN_USER_TAG)
+sankaku = DowSankaku(config.SAN_USER, config.SAN_PASSWORD, download_dir, config.SAN_USER_TAG + "+~webm+~mp4")
 pixiv = DowPixiv(download_dir, config.PIXIV_TOKEN)
 
 procs = []
@@ -53,28 +53,44 @@ def download_file(module, file):
       print("Insert to db: %s" % new_name)
       db.Insert(new_name.name, download_dir, file[2])
 
-skip_state = False
 def file_in_db(module, file):
   global db
-  global skip_state
-  # name = module.GetShortFileName(file)
-  # if name == "76391695":
-  #   skip_state = False
-  #   return True
-
-  return skip_state
-
-def file_no_in_db(module, file):
-  download_file(module, file)
-
+  global config
+  for f in file[1]:
+    f = pathlib.Path(f)
+    if f.suffix in ['.mp4', '.gif', '.webm']:
+      dbf = db.SelectAllFilesLike(f.name)
+      if dbf is None:
+        download_file(module, file)
+      else:
+        for df in dbf:
+          real = pathlib.Path(df[1]).joinpath(df[0])
+          if real.exists():
+            new = pathlib.Path(df[1]).joinpath(f.name)
+            if new.name != real.name:
+              real.replace(new)
+              print(f"Update {df[0]} to {new.name}")
+              db.Update(df[0], "name", new.name)
+          else:
+            gl = pathlib.Path(config.ROOT_DIR).glob(f"**/{f.stem}")
+            something_in = False
+            for gf in gl:
+              something_in = True
+              new_folder = gf.parents[0]
+              new_name = f.name
+              print(f"Update {df} to {new_folder}, {new_name}")
+              db.Update(df[0], "path", new_folder)
+              db.Update(df[0], "name", new_name)
+            
+            if not something_in:
+              download_file(module, file)
+      
   return True
 
 download_worker = DowWorker()
-procs.append(Process(target=download_worker.Worker, args=(sankaku, db, file_in_db, file_no_in_db,)))
-procs.append(Process(target=download_worker.Worker, args=(pixiv, db, file_in_db, file_no_in_db,)))
+procs.append(Process(target=download_worker.Worker, args=(sankaku, db, file_in_db, file_in_db,)))
+procs.append(Process(target=download_worker.Worker, args=(pixiv, db, file_in_db, file_in_db,)))
 procs[0].start()
 procs[1].start()
 for proc in procs:
   proc.join()
-
-#FixVideoWorker(sankaku)

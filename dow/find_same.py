@@ -1,5 +1,5 @@
-from Config import DowConfig
-from Database import DowDatabase
+from classes.Config import DowConfig
+from classes.Database import DowDatabase
 import pathlib
 import tensorflow as tf
 import numpy as np
@@ -8,7 +8,7 @@ from sklearn.neighbors import NearestNeighbors
 class Features():
   def __init__(self):
     self.__log = pathlib.Path("./log.txt").open("w")
-    self.__config = DowConfig()
+    self.__config = DowConfig(pathlib.Path(".").joinpath("config.json"))
     self.__db = DowDatabase(self.__config.ROOT_DIR, self.__config.DB_NAME)
     self.__model = tf.keras.applications.VGG19(weights='imagenet', include_top=False)
     self.__files, self.__features = self.__load_files()

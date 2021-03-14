@@ -1,8 +1,6 @@
-from pathlib import Path
 from pixivapi import Size
 from pixivapi import Client
-import os
-import sys
+import pathlib
 
 class DowPixiv():
   __page_data = ""
@@ -12,8 +10,8 @@ class DowPixiv():
     self.__token = token
     self.__client = Client()
     self.__client.authenticate(self.__token)
-    os.makedirs(self.__download_dir, exist_ok=True)
-    self.__download_dir = Path(self.__download_dir)
+    pathlib.Path(self.__download_dir).mkdir(parents=True, exist_ok=True)
+    self.__download_dir = pathlib.Path(self.__download_dir)
   
   def __load_page(self):
     if self.__page_data == "":
@@ -36,7 +34,6 @@ class DowPixiv():
 
       for p in ill.meta_pages:
         name = str (p[Size.ORIGINAL]).split('/')[-1]
-        print("File:%s" % name)
         file_name.append(name)
       
       self.__files.append([ill, file_name, tags])
@@ -57,11 +54,11 @@ class DowPixiv():
     self.__download_request(ill)
     result = True
     for s in file[1]:
-      dow_dir = self.__download_dir
+      dow_dir = pathlib.Path(self.__download_dir)
       if len (file[1]) > 1:
-        dow_dir = os.path.join(dow_dir, str (ill.id))
+        dow_dir = dow_dir.joinpath(str (ill.id))
 
-      if not os.path.exists(os.path.join(dow_dir, s)):
+      if not dow_dir.joinpath(s).exists():
         result = False
         break
     return result
