@@ -46,7 +46,7 @@ def download_file(module, file):
         db.Insert(new_name.name, p, file[2])
     else:
       f = pathlib.Path(file[1][0])
-      new_name = check_file_type(download_dir.joinpath(f)) if f.suffix not in ['.mp4', '.gif', '.webm'] else download_dir.joinpath(f)
+      new_name = check_file_type(download_dir.joinpath(f)) if f.suffix not in DowMimeType("").video_formats_suffix_list else download_dir.joinpath(f)
       if new_name.suffix != f.suffix:
         download_dir.joinpath(f).replace(new_name)
 

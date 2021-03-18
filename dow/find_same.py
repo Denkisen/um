@@ -1,5 +1,6 @@
 from classes.Config import DowConfig
 from classes.Database import DowDatabase
+from classes.MimeType import DowMimeType
 import pathlib
 import tensorflow as tf
 import numpy as np
@@ -39,7 +40,7 @@ class Features():
     files = []
     features = []
     for f in pathlib.Path(self.__config.ROOT_DIR).glob("**/*"):
-      if f.suffix in ['.png', '.jpg', '.jpeg', '.tiff', '.bmp']:
+      if f.suffix in DowMimeType("").image_formats_suffix_list:
         db_res = self.__db.SelectFile(f.name)
         if db_res is None:
           self.__move_to_error(f)

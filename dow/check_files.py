@@ -14,7 +14,7 @@ def files_diff():
     files_db.add(pathlib.Path(t[1]).joinpath(t[0]))
 
   for t in pathlib.Path(config.ROOT_DIR).glob("**/*"):
-    if t.suffix in ['.png', '.jpg', '.jpeg', '.tiff', '.bmp']:
+    if t.suffix in DowMimeType("").image_formats_suffix_list:
       files_glob.add(t)
 
   inter = files_glob.difference(files_db)
@@ -26,7 +26,7 @@ def files_format():
     if db_file is not None:
       true_ext = DowMimeType(t).GetType()
       if true_ext is None:
-        if t.suffix in ['.png', '.jpg', '.jpeg', '.tiff', '.bmp']:
+        if t.suffix in DowMimeType("").image_formats_suffix_list:
           folder = pathlib.Path(config.ROOT_DIR).joinpath(config.ERROR_FOLDER)
           folder.mkdir(parents=True, exist_ok=True)
           t.replace(folder.joinpath(t.name))
