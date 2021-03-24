@@ -31,11 +31,15 @@ class DowTagEditor():
     self.__db = None
     self.__all_tags = None
     self.__image_change_event_handler = None
-    self.__files = []
     self.current_file = ""
-    self.__file_index = 0
+
     self.__all_tags_widget = ViewStruct(all_tags)
     self.__all_tags_widget.SetDblClickHandler(self.__all_tags_widget_double_click)
+    self.__all_tags_widget.widget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+    a = QtGui.QAction("Get Files with tag", self.__all_tags_widget.widget)
+    a.triggered.connect(self.__select_files_with_tag)
+    self.__all_tags_widget.widget.addAction(a)
+
     self.__selected_tags_widget = ViewStruct(current_file_tags)
     self.__files_widget = ViewStruct(files)
     self.__files_widget.SetClickHandler(self.__files_widget_click)
@@ -47,32 +51,33 @@ class DowTagEditor():
     self.__back_button.clicked.connect(self.__back_button_click)
     self.__save_button.clicked.connect(self.__save_button_click)
     self.__search_box.textChanged.connect(self.__search_box_changed)
+    QtGui.QImageReader.setAllocationLimit(256)
     pass
 
   @QtCore.Slot()
   def __next_button_click(self):
-    if len(self.__files) > 0:
-      self.__file_index += 1
-      if self.__file_index >= len(self.__files):
-        self.__file_index = 0
+    index = self.__files_widget.widget.currentIndex()
+    if index.row() == self.__files_widget.model.rowCount() - 1:
+      index = self.__files_widget.model.index(0, 0)
+    else:
+      index = self.__files_widget.model.index(index.row() + 1, 0)
 
-      index = self.__files_widget.model.index(self.__file_index, 0)
-      self.__files_widget_click(index)
+    self.__files_widget_click(index)
 
   @QtCore.Slot()
   def __back_button_click(self):
-    if len(self.__files) > 0:
-      self.__file_index -= 1
-      if self.__file_index < 0:
-        self.__file_index = len(self.__files) - 1
+    index = self.__files_widget.widget.currentIndex()
+    if index.row() == 0:
+      index = self.__files_widget.model.index(self.__files_widget.model.rowCount() - 1, 0)
+    else:
+      index = self.__files_widget.model.index(index.row() - 1, 0)
 
-      index = self.__files_widget.model.index(self.__file_index, 0)
-      self.__files_widget_click(index)
+    self.__files_widget_click(index)
 
   @QtCore.Slot()
   def __save_button_click(self):
-    if len(self.__files) > 0:
-      index = self.__files_widget.model.index(self.__file_index, 0)
+    if self.__files_widget.model.rowCount() > 0:
+      index = self.__files_widget.widget.currentIndex()
       f = pathlib.Path(self.__files_widget.model.itemFromIndex(index).text())
       tags = []
       for l in self.__selected_tags_widget.model.findItems("", QtCore.Qt.MatchRegularExpression):
@@ -103,30 +108,44 @@ class DowTagEditor():
     item = QtGui.QStandardItem(self.__all_tags_widget.model.itemFromIndex(index))
     item.setCheckable(True)
     item.setCheckState(QtCore.Qt.CheckState.Checked)
-    self.__selected_tags_widget.model.appendRow(item)
-    self.__selected_tags_widget.widget.scrollToBottom()
+    if len(self.__selected_tags_widget.model.findItems(item.text(), QtCore.Qt.MatchExactly)) == 0:
+      self.__selected_tags_widget.model.appendRow(item)
+      self.__selected_tags_widget.widget.scrollToBottom()
 
   @QtCore.Slot()
   def __files_widget_click(self, index):
     self.__files_widget.widget.selectionModel().clear()
     self.__files_widget.widget.selectionModel().setCurrentIndex(index, QtCore.QItemSelectionModel.SelectCurrent)
     self.__selected_tags_widget.model.clear()
+    item = self.__files_widget.model.itemFromIndex(index)
+    self.current_file = item.text()
     if self.__image_change_event_handler is not None:
-      item = self.__files_widget.model.itemFromIndex(index)
-      if item is not None:
-        self.current_file = item.text()
-        self.__file_index = self.__files.index(item.text())
-        self.__image_change_event_handler()
-        if self.__db is not None:
-          f = self.__db.SelectFile(pathlib.Path(self.current_file).name)
-          if f is not None:
-            tgs = f[2].split(" ")
-            for t in tgs:
-              item = self.__all_tags_widget.model.findItems(t, QtCore.Qt.MatchExactly)
-              item = QtGui.QStandardItem(item[0])
-              item.setCheckable(True)
-              item.setCheckState(QtCore.Qt.Checked)
-              self.__selected_tags_widget.model.appendRow(item)
+      self.__image_change_event_handler()
+
+    if self.__db is not None:
+      f = self.__db.SelectFile(pathlib.Path(self.current_file).name)
+      if f is not None:
+        tgs = f[2].split(" ")
+        for t in tgs:
+          item = self.__all_tags_model.findItems(t, QtCore.Qt.MatchExactly)
+          if len(item) > 0:
+            item = QtGui.QStandardItem(item[0])
+            item.setCheckable(True)
+            item.setCheckState(QtCore.Qt.Checked)
+            self.__selected_tags_widget.model.appendRow(item)
+
+  @QtCore.Slot()
+  def __select_files_with_tag(self):
+    index = self.__all_tags_widget.widget.selectedIndexes()
+    if len(index) > 0:
+      index = index[0]
+      if self.__db is not None:
+        self.ClearFiles()
+        from_db = self.__db.SelectFilesWith("tags", self.__all_tags_widget.model.itemFromIndex(index).text())
+        files = []
+        for f in from_db:
+          files.append(pathlib.Path(f[1], f[0]))
+        self.AddFiles(files)
 
   def SetDatabase(self, db : DowDatabase):
     self.__db = db
@@ -149,8 +168,6 @@ class DowTagEditor():
   def ClearFiles(self):
     self.__files_widget.model.clear()
     self.current_file = ""
-    self.__file_index = 0
-    self.__files.clear()
     self.__selected_tags_widget.model.clear()
     self.__image_change_event_handler()
 
@@ -158,13 +175,12 @@ class DowTagEditor():
     select = None
     for f in files:
       f = pathlib.Path(f)
-      if f.suffix in DowMimeType("").image_formats_suffix_list:
+      if f.suffix in DowMimeType("").all_formats_suffix_list:
         item = QtGui.QStandardItem(str(f))
         item.setCheckable(False)
         item.setEditable(False)
         if select is None:
           select = item
-        self.__files.append(str(f))
         self.__files_widget.model.appendRow(item)
 
     ind = self.__files_widget.model.indexFromItem(select)

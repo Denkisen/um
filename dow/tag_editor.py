@@ -4,8 +4,9 @@ from PySide6 import QtCore, QtWidgets, QtGui
 from classes.TagEditor import DowTagEditor
 from classes.Config import DowConfig
 from classes.Database import DowDatabase
+from classes.MimeType import DowMimeType
 
-class MainWidget(QtWidgets.QMainWindow):
+class MainWidget(QtWidgets.QWidget):
   def __init__(self, app):
     super().__init__()
     self.__app = app
@@ -20,7 +21,7 @@ class MainWidget(QtWidgets.QMainWindow):
 
     self.__menu_bar = QtWidgets.QMenuBar()
     self.__menu_bar.addMenu(self.__file_menu)
-    self.setMenuBar(self.__menu_bar)
+
     ## Left side
     self.__image = QtWidgets.QLabel()
     self.__image.setAlignment(QtCore.Qt.AlignVCenter)
@@ -63,12 +64,10 @@ class MainWidget(QtWidgets.QMainWindow):
     self.__controls_right_layout.addLayout(self.__buttons_right_layout)
 
     #Layouts
-    self.__main_widget = QtWidgets.QWidget()
-    
-    self.__main_layout = QtWidgets.QHBoxLayout(self.__main_widget)
+    self.__main_layout = QtWidgets.QHBoxLayout(self)
     self.__main_layout.addLayout(self.__controls_left_layout)
     self.__main_layout.addWidget(self.__right_box)
-    self.setCentralWidget(self.__main_widget)
+    self.__main_layout.setMenuBar(self.__menu_bar)
 
     #Logic
     self.__logic = DowTagEditor(self.__all_tags, 
@@ -88,7 +87,7 @@ class MainWidget(QtWidgets.QMainWindow):
     files = QtWidgets.QFileDialog.getOpenFileNames(self, 
                 "Open Files", 
                 self.__config.ROOT_DIR, 
-                "Images (*.png *.jpeg *.jpg *.bmp *.tiff)"
+                "Images (*.png *.jpeg *.jpg *.bmp *.tiff *.gif *.mp4)"
                 )
     self.__logic.AddFiles(files[0])
 
@@ -114,18 +113,21 @@ class MainWidget(QtWidgets.QMainWindow):
   def __load_image(self):
     file_path = pathlib.Path(self.__logic.current_file)
     if file_path.name != "" and file_path.exists():
-      pix = QtGui.QPixmap(str(file_path))
-      s = self.__left_box.size()
-      s.setHeight(s.height() - 20)
-      pix = pix.scaled(s, QtCore.Qt.AspectRatioMode.KeepAspectRatio, QtCore.Qt.TransformationMode.SmoothTransformation) # scaledToWidth(self.__left_box.size().width() - 20, QtCore.Qt.TransformationMode.SmoothTransformation)
-      self.__image.setPixmap(pix)
+      if file_path.suffix in DowMimeType("").image_formats_suffix_list:
+        pix = QtGui.QPixmap(str(file_path))
+        s = self.__left_box.size()
+        s.setHeight(s.height() - 20)
+        pix = pix.scaled(s, QtCore.Qt.AspectRatioMode.KeepAspectRatio, QtCore.Qt.TransformationMode.SmoothTransformation) # scaledToWidth(self.__left_box.size().width() - 20, QtCore.Qt.TransformationMode.SmoothTransformation)
+        self.__image.setPixmap(pix)
+      else:
+        vid = QtGui.QMovie(self.__logic.current_file)
+        self.__image.setMovie(vid)
     else:
       self.__image.clear()
 
   @QtCore.Slot()
   def resizeEvent(self, event: QtGui.QResizeEvent):
     self.__load_image()
-    pass
 
 if __name__ == "__main__":
   app = QtWidgets.QApplication(sys.argv)

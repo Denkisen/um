@@ -42,7 +42,7 @@ class DowDatabase():
     self.mutex.release()
   
   def Update(self, name, field, value):
-    sql = "UPDATE files SET %s = '%s' WHERE name = '%s'" % (field, value, name)
+    sql = "UPDATE files SET %s = '%s' WHERE name = '%s'" % (field, str(value).replace("'","''"), name)
     self.mutex.acquire()
     self.__log is None or self.__log.write(sql + "\n")
     self.__db_cur.execute(sql)
@@ -101,6 +101,10 @@ class DowDatabase():
 
   def SelectAll(self):
     sql = "SELECT * FROM files"
+    return self.Execute(sql)
+
+  def SelectFilesWith(self, field, text):
+    sql = f"SELECT * FROM files WHERE {field} LIKE '%{text}%'"
     return self.Execute(sql)
 
   def Execute(self, sql):
