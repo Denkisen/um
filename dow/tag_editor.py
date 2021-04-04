@@ -5,6 +5,7 @@ from classes.TagEditor import DowTagEditor
 from classes.Config import DowConfig
 from classes.Database import DowDatabase
 from classes.MimeType import DowMimeType
+from classes.GlImage import DowGlImage
 
 class MainWidget(QtWidgets.QWidget):
   def __init__(self, app):
@@ -23,8 +24,8 @@ class MainWidget(QtWidgets.QWidget):
     self.__menu_bar.addMenu(self.__file_menu)
 
     ## Left side
-    self.__image = QtWidgets.QLabel()
-    self.__image.setAlignment(QtCore.Qt.AlignVCenter)
+    self.__image = DowGlImage(self) #QtWidgets.QLabel()
+    # self.__image.setAlignment(QtCore.Qt.AlignVCenter)
 
     self.__controls_left_layout = QtWidgets.QVBoxLayout()
     self.__left_box = QtWidgets.QWidget()
@@ -114,16 +115,11 @@ class MainWidget(QtWidgets.QWidget):
     file_path = pathlib.Path(self.__logic.current_file)
     if file_path.name != "" and file_path.exists():
       if file_path.suffix in DowMimeType("").image_formats_suffix_list:
-        pix = QtGui.QPixmap(str(file_path))
-        s = self.__left_box.size()
-        s.setHeight(s.height() - 20)
-        pix = pix.scaled(s, QtCore.Qt.AspectRatioMode.KeepAspectRatio, QtCore.Qt.TransformationMode.SmoothTransformation) # scaledToWidth(self.__left_box.size().width() - 20, QtCore.Qt.TransformationMode.SmoothTransformation)
-        self.__image.setPixmap(pix)
+        self.__image.SetImage(file_path)
       else:
-        vid = QtGui.QMovie(self.__logic.current_file)
-        self.__image.setMovie(vid)
+        self.__image.SetVideo(file_path)
     else:
-      self.__image.clear()
+      self.__image.Clear()
 
   @QtCore.Slot()
   def resizeEvent(self, event: QtGui.QResizeEvent):

@@ -5,3 +5,4 @@ from .Pixiv import DowPixiv
 from .Worker import DowWorker
 from .MimeType import DowMimeType
 from .TagEditor import DowTagEditor
+from .GlImage import DowGlImage
