@@ -1,4 +1,5 @@
 import magic
+import cv2
 import pathlib
 
 class DowMimeType():
@@ -10,3 +11,7 @@ class DowMimeType():
 
   def GetType(self):
     return str(magic.from_file(self.__file, mime=True)).split("/")[-1]
+
+  def GetSize(self):
+    f = cv2.imread(str(self.__file), cv2.IMREAD_UNCHANGED)
+    return f.shape[1], f.shape[0]

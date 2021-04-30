@@ -42,7 +42,7 @@ class DowGlImage(QtOpenGLWidgets.QOpenGLWidget, QtGui.QOpenGLFunctions):
       outColor = texture(inTexture, texCoord);
     }
     """
-  def __init__(self, parent):
+  def __init__(self, parent, tag = None):
     QtOpenGLWidgets.QOpenGLWidget.__init__(self, parent)
     GL.__init__(self)
     self.__data = np.array(
@@ -52,11 +52,11 @@ class DowGlImage(QtOpenGLWidgets.QOpenGLWidget, QtGui.QOpenGLFunctions):
         1.0, -1.0, 0.0,  1.0, 0.0],
       dtype=ctypes.c_float)
       
+    self.tag = tag
+    self.__mutex = threading.Lock()
     self._is_video = False
     self._is_video_playing = False
 
-    self.__video_thread = threading.Thread(target=self.__video_play, args=(), daemon=True)
-    self.__video_thread.start()
     self.__texture_generator = None
     self.__player = None
     self.__uniform_tex_bias = -1
@@ -96,13 +96,16 @@ class DowGlImage(QtOpenGLWidgets.QOpenGLWidget, QtGui.QOpenGLFunctions):
     self.__vao.release()
     self.__buffer.release()
 
+    self.__video_thread = threading.Thread(target=self.__video_play, args=(), daemon=True)
+    self.__video_thread.start()
+
   def resizeGL(self, w, h):
-    self.makeCurrent()
     self.glViewport(0, 0, w, h)
 
   def paintGL(self):
-    self.makeCurrent()
     self.glClear(pygl.GL_COLOR_BUFFER_BIT)
+
+    self.__mutex.acquire()
 
     if self.__texture_generator is not None:
       texture = None
@@ -123,12 +126,17 @@ class DowGlImage(QtOpenGLWidgets.QOpenGLWidget, QtGui.QOpenGLFunctions):
         self.glActiveTexture(pygl.GL_TEXTURE0)
         texture.bind()
         self.glDrawArrays(int(pygl.GL_POLYGON), 0, 4)
+        texture.release()
+        self.__vao.release()
         self.__program.release()
         if self._is_video:
           texture.destroy()
       else:
         self.__texture_generator = None
         self._is_video = False
+
+    self.__mutex.release()
+
 
   def __create_texture(self, image):
     texture = QtOpenGL.QOpenGLTexture(QtOpenGL.QOpenGLTexture.Target2D)
@@ -175,22 +183,34 @@ class DowGlImage(QtOpenGLWidgets.QOpenGLWidget, QtGui.QOpenGLFunctions):
       yield tex
 
   def SetImage(self, filename):
+    self.__mutex.acquire()
     self._is_video = False
+    if self.__texture_generator != None:
+      tex = next(self.__texture_generator)
+      tex.destroy()
     self.__texture_generator = self.__image_stream(filename)
+    self.__mutex.release()
 
   def SetVideo(self, filename):
+    self.__mutex.acquire()
     self._is_video = True
     self.__texture_generator = self.__video_stream(filename)
+    self.__mutex.release()
 
   def Clear(self):
+    self.__mutex.acquire()
     self.__texture_generator = None
+    self.__mutex.release()
 
   def __video_play(self):
     while True:
       try:
+        pass
         self.update()
       except:
         break
+      finally:
+        pass
       time.sleep(0.0416)
 
 class MainWindow(QtWidgets.QWidget):

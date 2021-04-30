@@ -30,7 +30,7 @@ class MainWidget(QtWidgets.QWidget):
     self.__controls_left_layout = QtWidgets.QVBoxLayout()
     self.__left_box = QtWidgets.QWidget()
     self.__left_box_layout = QtWidgets.QVBoxLayout(self.__left_box)
-
+    self.__left_box_layout.setContentsMargins(QtCore.QMargins(0,0,0,0))
     self.__left_box_layout.addWidget(self.__image)
     self.__controls_left_layout.addWidget(self.__left_box)
     ## Right side
