@@ -13,11 +13,11 @@ class DowWorker():
         short_name = module.GetShortFileName(file)
         if db.IsFileInLike(short_name):
           if file_in_db_func is not None and not file_in_db_func(module, file):
-            print("End of worker")
+            print( module.name + ": End of worker")
             return
         else:
           if file_no_in_db_func is not None and not file_no_in_db_func(module, file):
-            print("End of worker")
+            print( module.name + ": End of worker")
             return
 
     

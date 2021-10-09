@@ -1,28 +1,56 @@
 from pixivapi import Size
 from pixivapi import Client
+from pixivapi import errors
 import pathlib
+import time
 
 class DowPixiv():
   __page_data = ""
   __files = []
+  name = "Pixiv"
   def __init__(self, download_dir, token):
     self.__download_dir = download_dir
     self.__token = token
-    self.__client = Client()
-    self.__client.authenticate(self.__token)
+    if not self.__authenticate():
+      raise errors.LoginError()
+
     pathlib.Path(self.__download_dir).mkdir(parents=True, exist_ok=True)
     self.__download_dir = pathlib.Path(self.__download_dir)
+
+  def __authenticate(self):
+    it = 0
+    while it < 20:
+      try:
+        self.__client = Client()
+        self.__client.authenticate(self.__token)
+        return True
+      except:
+        print("Auth failed. Retry...")
+      
+      it += 1
+      time.sleep(5)
+
+    return False
   
   def __load_page(self):
     if self.__page_data == "":
       self.__page_data = self.__client.fetch_user_bookmarks(self.__client.account.id)
     else:
-      self.__page_data = self.__client.fetch_user_bookmarks(self.__client.account.id, max_bookmark_id=int (self.__page_data['next']))
+      try:
+        self.__page_data = self.__client.fetch_user_bookmarks(self.__client.account.id, max_bookmark_id=int (self.__page_data['next']))
+      except errors.BadApiResponse:
+        print("errors.BadApiResponse: trying to recover")
+        if not self.__authenticate():
+          self.__page_data = {
+            'next': None
+          }
+          return
+
     
     self.__files = []
     for ill in self.__page_data['illustrations']:
-      tags = ill.user.name
-      tags += " " + ill.user.account
+      tags = str(ill.user.name).replace("'","''").replace(' ', '_')
+      tags += " " + str(ill.user.account).replace("'","''").replace(' ', '_')
       for tag in ill.tags:
         if tag['translated_name'] is not None:
           tags += " " + str (tag['translated_name']).replace(' ', '_').replace("'", "''")

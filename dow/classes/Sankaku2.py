@@ -9,6 +9,7 @@ class DowSankaku():
   __search_tags = ""
   __page = 1
   __files = []
+  name = "Sankaku"
 
   def __init__(self, user, passwd, download_dir, tags):
     self.__conn = requests.Session()
@@ -67,7 +68,8 @@ class DowSankaku():
                               [spt[9].split("/")[-1]], 
                               " ".join(spt[11].replace("'", "''").split(" ")[:-4]),
                               spt[9]])
-      
+    
+    print("Page" + str(self.__page))
     self.__page += 1
 
   def __load_image_page(self, file):
@@ -105,7 +107,7 @@ class DowSankaku():
   def DownloadFile(self, file):
     name = pathlib.Path(self.__download_dir).joinpath(file[1][0])
     data = self.__download_request(file[4])
-    if data.status_code == 200:
+    if type(data) != str and data.status_code == 200:
       name.open("bw").write(data.content)
       print("Download file:%s" % name)
       return True

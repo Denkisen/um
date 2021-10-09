@@ -8,7 +8,7 @@ import pathlib
 from multiprocessing import Process
 
 config = DowConfig(pathlib.Path(".").joinpath("config.json"))
-db = DowDatabase(config.ROOT_DIR, config.DB_NAME)
+db = DowDatabase(config.ROOT_DIR, config.DB_NAME, False)
 download_dir = pathlib.Path(config.ROOT_DIR).joinpath(config.DOWNLOAD_FOLDER)
 sankaku = DowSankaku(config.SAN_USER, config.SAN_PASSWORD, download_dir, config.SAN_USER_TAG)
 pixiv = DowPixiv(download_dir, config.PIXIV_TOKEN)
@@ -53,16 +53,27 @@ def download_file(module, file):
       print("Insert to db: %s" % new_name)
       db.Insert(new_name.name, download_dir, file[2])
 
-skip_state = False
-def file_in_db(module, file):
+p_skip_state = False
+def p_file_in_db(module, file):
   global db
-  global skip_state
-  # name = module.GetShortFileName(file)
-  # if name == "76391695":
-  #   skip_state = False
-  #   return True
+  global p_skip_state
+  name = module.GetShortFileName(file)
+  if name == "61666908":
+   p_skip_state = False
+   return True
 
-  return skip_state
+  return p_skip_state
+
+s_skip_state = False
+def s_file_in_db(module, file):
+  global db
+  global s_skip_state
+  name = module.GetShortFileName(file)
+  if name == "5122f15b93c1c8a8187b4f9a3984eef":
+    s_skip_state = False
+    return True
+
+  return s_skip_state
 
 def file_no_in_db(module, file):
   download_file(module, file)
@@ -70,10 +81,11 @@ def file_no_in_db(module, file):
   return True
 
 download_worker = DowWorker()
-procs.append(Process(target=download_worker.Worker, args=(sankaku, db, file_in_db, file_no_in_db,)))
-procs.append(Process(target=download_worker.Worker, args=(pixiv, db, file_in_db, file_no_in_db,)))
-procs[0].start()
-procs[1].start()
+procs.append(Process(target=download_worker.Worker, args=(sankaku, db, s_file_in_db, file_no_in_db,)))
+procs.append(Process(target=download_worker.Worker, args=(pixiv, db, p_file_in_db, file_no_in_db,)))
+for proc in procs:
+  proc.start()
+
 for proc in procs:
   proc.join()
 

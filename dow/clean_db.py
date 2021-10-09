@@ -10,7 +10,11 @@ files = db.SelectAll()
 if files is None or len(files) == 0:
   exit(0)
 
+
 for line in files:
   name, path, tags, features = line
+  path = str(path).replace("nice3", "nice4")
   if not pathlib.Path(path).joinpath(name).exists():
     db.Delete(name)
+  else:
+    db.Update(name, "path", path)

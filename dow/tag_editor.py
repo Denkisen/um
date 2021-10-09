@@ -5,7 +5,7 @@ from classes.TagEditor import DowTagEditor
 from classes.Config import DowConfig
 from classes.Database import DowDatabase
 from classes.MimeType import DowMimeType
-from classes.GlImage import DowGlImage
+from classes.GlImage2 import DowGlImage
 
 class MainWidget(QtWidgets.QWidget):
   def __init__(self, app):
@@ -88,7 +88,7 @@ class MainWidget(QtWidgets.QWidget):
     files = QtWidgets.QFileDialog.getOpenFileNames(self, 
                 "Open Files", 
                 self.__config.ROOT_DIR, 
-                "Images (*.png *.jpeg *.jpg *.bmp *.tiff *.gif *.mp4)"
+                "Images (*.png *.jpeg *.jpg *.bmp *.tiff *.gif *.mp4 *.webm)"
                 )
     self.__logic.AddFiles(files[0])
 

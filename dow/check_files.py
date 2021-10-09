@@ -41,4 +41,14 @@ def files_format():
         t.replace(new_name)
         db.Update(db_file[0], "name", new_name.name)
 
-files_format()
+def find_untracked():
+  folder = pathlib.Path(config.ROOT_DIR).joinpath(config.ADD_FOLDER)
+  folder.mkdir(parents=True, exist_ok=True)
+  for t in pathlib.Path(config.ROOT_DIR).glob("**/*.*"):
+    db_file = db.SelectFileLike(t.stem)
+    if db_file is None:
+      t.replace(folder.joinpath(t.name))
+      print(f"Old name: {t}, New name: {folder.joinpath(t.name)}")
+
+find_untracked()
+#files_format()

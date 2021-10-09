@@ -12,6 +12,7 @@ class MainWidget(QtWidgets.QWidget):
     super().__init__()
     self.__app = app
     self.__config = DowConfig(pathlib.Path(".").joinpath("config.json"))
+    self.__db = None
     if pathlib.Path(self.__config.ROOT_DIR).joinpath(self.__config.DB_NAME).exists():
       self.__db = DowDatabase(self.__config.ROOT_DIR, self.__config.DB_NAME)
     else:
@@ -34,11 +35,11 @@ class MainWidget(QtWidgets.QWidget):
     main_layout.setContentsMargins(QtCore.QMargins(0,0,0,0))
     main_layout.addWidget(self.__slide_view)
     self.setLayout(main_layout)
-    self.__engine = DowSlideShow(self.__config, None)
+    self.__engine = DowSlideShow(self.__config, self.__db, pathlib.Path("~/Projects/py-scripts/um/dow/random_slide_script.json"), self.__slide_view, self.__slide_label)
 
   def keyPressEvent(self, event : QtGui.QKeyEvent):
     super(MainWidget, self).keyPressEvent(event)
-    if event.key() == QtGui.QKeySequence.fromString("Space",QtGui.QKeySequence.SequenceFormat.NativeText):
+    if event.key() == QtCore.Qt.Key_Space:
       pass
     else:
       exit(0)

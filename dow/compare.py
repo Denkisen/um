@@ -3,7 +3,7 @@ import pathlib
 import threading
 from PySide6 import QtCore, QtWidgets, QtGui, QtOpenGL
 from classes.MimeType import DowMimeType
-from classes.GlImage import DowGlImage
+from classes.GlImage2 import DowGlImage
 from classes.Config import DowConfig
 
 class MainWidget(QtWidgets.QWidget):
@@ -25,7 +25,7 @@ class MainWidget(QtWidgets.QWidget):
     self.__left_image_widget_layout.setContentsMargins(1,1,1,1)
     self.__left_image_widget.setStyleSheet("background-color: yellow")
     
-    self.__left_image = DowGlImage(self.__left_image_widget, 0)
+    self.__left_image = DowGlImage(self.__left_image_widget)
     self.__left_image_widget_layout.addWidget(self.__left_image)
 
     self.__left_image_info = QtWidgets.QLabel("")
@@ -39,7 +39,7 @@ class MainWidget(QtWidgets.QWidget):
     self.__right_image_widget_layout = QtWidgets.QGridLayout(self.__right_image_widget)
     self.__right_image_widget_layout.setContentsMargins(1,1,1,1)
 
-    self.__right_image = DowGlImage(self.__right_image_widget, 1)
+    self.__right_image = DowGlImage(self.__right_image_widget)
     self.__right_image_widget_layout.addWidget(self.__right_image)
 
     self.__right_image_info = QtWidgets.QLabel("")
@@ -51,8 +51,11 @@ class MainWidget(QtWidgets.QWidget):
     self.__open_button.clicked.connect(self.__open_button_click)
     self.__next_button = QtWidgets.QPushButton("Next")
     self.__next_button.clicked.connect(self.__next_button_click)
+    self.__update_button = QtWidgets.QPushButton("Update")
+    self.__update_button.clicked.connect(self.__update_button_click)
     self.__buttons_layout.addWidget(self.__open_button)
     self.__buttons_layout.addWidget(self.__next_button)
+    self.__buttons_layout.addWidget(self.__update_button)
 
     self.__images_layout.addLayout(self.__left_image_layout)
     self.__images_layout.addLayout(self.__right_image_layout)
@@ -95,21 +98,29 @@ class MainWidget(QtWidgets.QWidget):
     f = pathlib.Path(self.__files[self.__iterator][index])
     f.rename(pathlib.Path(self.__config.ROOT_DIR).joinpath("ToDelete").joinpath(f.name))
     print(f"delete: {self.__files[self.__iterator][index]}")
-    self.__next_button_click()
-    self.update()
+    self.__next_button.clicked.emit()
+
+  @QtCore.Slot()
+  def __update_button_click(self):
+    self.__left_image.update()
+    self.__right_image.update()
 
   @QtCore.Slot()
   def __next_button_click(self):
-    self.__iterator += 1
-    if self.__iterator < len(self.__files):
-      if pathlib.Path(self.__files[self.__iterator][0]).exists() and pathlib.Path(self.__files[self.__iterator][1]).exists():
-        self.__set_image(self.__files[self.__iterator][0], True)
-        self.__set_image(self.__files[self.__iterator][1], False)
-    else:
-      self.__files.clear()
-      self.__iterator = 0
-      self.__clear_image(True)
-      self.__clear_image(False)
+    print("Next")
+    while self.__iterator < len(self.__files):
+      self.__iterator += 1
+      if self.__iterator < len(self.__files):
+        if pathlib.Path(self.__files[self.__iterator][0]).exists() and pathlib.Path(self.__files[self.__iterator][1]).exists():
+          self.__set_image(self.__files[self.__iterator][0], True)
+          self.__set_image(self.__files[self.__iterator][1], False)
+          break
+      else:
+        self.__files.clear()
+        self.__iterator = 0
+        self.__clear_image(True)
+        self.__clear_image(False)
+        break
 
 
   @QtCore.Slot()
