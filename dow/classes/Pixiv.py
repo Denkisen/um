@@ -99,3 +99,7 @@ class DowPixiv():
   
   def GetShortFileName(self, file):
     return str (file[0].id)
+
+  def DeleteBookmark(self, file):
+    print(f"Delete bookmark {str(file[1].id)}")
+    self.__client.delete_bookmark(file[0].id)

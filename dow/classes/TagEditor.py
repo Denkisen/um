@@ -29,6 +29,7 @@ class DowTagEditor():
                      save_button : QtWidgets.QPushButton,
                      search_box : QtWidgets.QLineEdit):
     self.__db = None
+    self.__config = None
     self.__all_tags = None
     self.__image_change_event_handler = None
     self.current_file = ""
@@ -43,6 +44,11 @@ class DowTagEditor():
     self.__selected_tags_widget = ViewStruct(current_file_tags)
     self.__files_widget = ViewStruct(files)
     self.__files_widget.SetClickHandler(self.__files_widget_click)
+    self.__files_widget.widget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+    a = QtGui.QAction("Delete", self.__files_widget.widget)
+    a.triggered.connect(self.__delete_action)
+    self.__files_widget.widget.addAction(a)
+
     self.__next_button = next_button
     self.__back_button = back_button
     self.__save_button = save_button
@@ -53,6 +59,29 @@ class DowTagEditor():
     self.__search_box.textChanged.connect(self.__search_box_changed)
     QtGui.QImageReader.setAllocationLimit(256)
     pass
+
+  def keyPressEvent(self, event : QtGui.QKeyEvent):
+    if event.key() == QtCore.Qt.Key_Left:
+      self.__back_button.clicked.emit()
+
+    if event.key() == QtCore.Qt.Key_Right:
+      self.__next_button.clicked.emit()
+
+    if event.key() == QtCore.Qt.Key_Return:
+      self.__save_button.clicked.emit()
+      self.__next_button.clicked.emit()
+
+  @QtCore.Slot()
+  def __delete_action(self):
+    if self.__files_widget.model.rowCount() > 0 and self.__config != None:
+      index = self.__files_widget.widget.currentIndex()
+      f = pathlib.Path(self.__files_widget.model.itemFromIndex(index).text())
+
+      pathlib.Path(self.__config.ROOT_DIR).joinpath("ToDelete").mkdir(parents=True, exist_ok=True)
+      f.rename(pathlib.Path(self.__config.ROOT_DIR).joinpath("ToDelete").joinpath(f.name))
+      print(f"delete: {self.__files_widget.model.itemFromIndex(index).text()}")
+      self.__files_widget.model.removeRow(index)
+      self.__next_button.clicked.emit()
 
   @QtCore.Slot()
   def __next_button_click(self):
@@ -146,6 +175,9 @@ class DowTagEditor():
         for f in from_db:
           files.append(pathlib.Path(f[1], f[0]))
         self.AddFiles(files)
+
+  def SetConfig(self, conf : DowConfig):
+    self.__config = conf
 
   def SetDatabase(self, db : DowDatabase):
     self.__db = db

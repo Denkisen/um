@@ -80,9 +80,8 @@ def file_no_in_db(module, file):
 
   return True
 
-download_worker = DowWorker()
-procs.append(Process(target=download_worker.Worker, args=(sankaku, db, s_file_in_db, file_no_in_db,)))
-procs.append(Process(target=download_worker.Worker, args=(pixiv, db, p_file_in_db, file_no_in_db,)))
+procs.append(Process(target=DowWorker().Worker, args=(sankaku, db, s_file_in_db, file_no_in_db,)))
+procs.append(Process(target=DowWorker().Worker, args=(pixiv, db, p_file_in_db, file_no_in_db,)))
 for proc in procs:
   proc.start()
 

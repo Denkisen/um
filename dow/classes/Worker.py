@@ -8,6 +8,7 @@ class DowWorker():
       for i in range(module.GetFilesLen()):
         file = module.GetFile(i)
         if file is None:
+          print( module.name + ": End of worker")
           return
 
         short_name = module.GetShortFileName(file)

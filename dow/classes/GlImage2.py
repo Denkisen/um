@@ -130,13 +130,15 @@ class DowGlImage(QtOpenGLWidgets.QOpenGLWidget):
     self.__draw_timer.setInterval(1000 / 30)
     return None
 
-  def SetImage(self, filename):
+  @QtCore.Slot(str)
+  def SetImage(self, filename : str):
     self.__is_video = False
-    if self.__texture_generator != None:
-      tex = next(self.__texture_generator)
-      tex.destroy()
+    # if self.__texture_generator != None:
+    #   tex = next(self.__texture_generator)
+    #   tex.destroy()
     self.__texture_generator = self.__image_stream(filename)
 
+  @QtCore.Slot(str)
   def SetVideo(self, filename):
     self._is_video = True
     self.__texture_generator = self.__video_stream(filename)

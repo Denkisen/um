@@ -78,6 +78,7 @@ class MainWidget(QtWidgets.QWidget):
                                 self.__back_button,
                                 self.__save_button,
                                 self.__search_box)
+    self.__logic.SetConfig(self.__config)
     if pathlib.Path(self.__config.ROOT_DIR).joinpath(self.__config.DB_NAME).exists():
       self.__db = DowDatabase(self.__config.ROOT_DIR, self.__config.DB_NAME)
       self.__logic.SetDatabase(self.__db)
@@ -125,10 +126,14 @@ class MainWidget(QtWidgets.QWidget):
   def resizeEvent(self, event: QtGui.QResizeEvent):
     self.__load_image()
 
+  def keyPressEvent(self, event : QtGui.QKeyEvent):
+    super(MainWidget, self).keyPressEvent(event)
+    self.__logic.keyPressEvent(event)
+
 if __name__ == "__main__":
   app = QtWidgets.QApplication(sys.argv)
   widget = MainWidget(app)
   widget.resize(800, 600)
   widget.show()
 
-  sys.exit(app.exec_())
+  sys.exit(app.exec())

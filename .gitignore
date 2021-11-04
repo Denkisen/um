@@ -6,5 +6,5 @@ log.txt
 __pycache__
 build-umTagEditor-Desktop-*
 random_slide_script.json
-slide_script_template.json
+slide_script_*.json
 NN/*

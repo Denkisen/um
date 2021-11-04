@@ -4,7 +4,7 @@ from PySide6 import QtCore, QtWidgets, QtGui
 from classes.Config import DowConfig
 from classes.Database import DowDatabase
 from classes.MimeType import DowMimeType
-from classes.GlImage import DowGlImage
+from classes.GlImage2 import DowGlImage
 from classes.SlideShow import DowSlideShow
 
 class MainWidget(QtWidgets.QWidget):
@@ -35,7 +35,13 @@ class MainWidget(QtWidgets.QWidget):
     main_layout.setContentsMargins(QtCore.QMargins(0,0,0,0))
     main_layout.addWidget(self.__slide_view)
     self.setLayout(main_layout)
-    self.__engine = DowSlideShow(self.__config, self.__db, pathlib.Path("~/Projects/py-scripts/um/dow/random_slide_script.json"), self.__slide_view, self.__slide_label)
+    self.__engine = DowSlideShow(self.__config, 
+                                 self.__db, 
+                                 pathlib.Path("slide_script_1.json"), 
+                                 self.__slide_view, 
+                                 self.__slide_label,
+                                 "1.wav")
+    self.__engine.OnSlideShowEnd.connect(self.__OnSlideShowEnd)
 
   def keyPressEvent(self, event : QtGui.QKeyEvent):
     super(MainWidget, self).keyPressEvent(event)
@@ -43,12 +49,16 @@ class MainWidget(QtWidgets.QWidget):
       pass
     else:
       exit(0)
+  
+  @QtCore.Slot()
+  def __OnSlideShowEnd(self):
+    exit(0)
 
 if __name__ == "__main__":
   app = QtWidgets.QApplication(sys.argv)
   widget = MainWidget(app)
-  widget.resize(1280, 720)
+  widget.resize(200, 200)
   #widget.showFullScreen()
   widget.show()
 
-  sys.exit(app.exec_())
+  sys.exit(app.exec())

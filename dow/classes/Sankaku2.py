@@ -117,5 +117,13 @@ class DowSankaku():
   def GetShortFileName(self, file):
     return str(file[1][0].split(".")[0])
 
+  def DeleteBookmark(self, file):
+    id_ = str(file[0]).split("/")[-1]
+    print(f"Delete bookmark {id_}")
+    values = {
+      "id" : int(id_)
+    }
+    response = self.__conn.post(self.__url + "/favorite/destroy.json", data=values)
+
 if __name__ == '__main__':
   pass
