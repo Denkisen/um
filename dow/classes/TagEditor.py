@@ -173,7 +173,8 @@ class DowTagEditor():
         from_db = self.__db.SelectFilesWith("tags", self.__all_tags_widget.model.itemFromIndex(index).text())
         files = []
         for f in from_db:
-          files.append(pathlib.Path(f[1], f[0]))
+          if self.__all_tags_widget.model.itemFromIndex(index).text() in str(f[2]).split(" "):
+            files.append(pathlib.Path(f[1], f[0]))
         self.AddFiles(files)
 
   def SetConfig(self, conf : DowConfig):

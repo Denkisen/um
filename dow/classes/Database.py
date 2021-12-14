@@ -97,7 +97,7 @@ class DowDatabase():
     self.__db.commit()
     ret = self.__db_cur.fetchall()
     self.mutex.release()
-    return ret if len(ret) > 0 else None
+    return ret
 
   def SelectAll(self):
     sql = "SELECT * FROM files"

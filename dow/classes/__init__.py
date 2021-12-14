@@ -5,5 +5,6 @@ from .Pixiv import DowPixiv
 from .Worker import DowWorker
 from .MimeType import DowMimeType
 from .TagEditor import DowTagEditor
-from .GlImage2 import DowGlImage
-from .SlideShow import DowSlideShow
+from .GlImage import DowGlImage
+from .SlideShow import DowSlideShowManager
+from .SequenceScriptParser import DowSequenceScriptParser

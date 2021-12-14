@@ -3,8 +3,10 @@ from PySide6 import QtCore, QtWidgets, QtGui, QtOpenGLWidgets, QtOpenGL
 import cv2
 from ffpyplayer.player import MediaPlayer
 import numpy as np
+import threading
 from OpenGL import GL as pygl
 from shiboken6 import VoidPtr
+import queue
 
 class DowGlImage(QtOpenGLWidgets.QOpenGLWidget):
   __data = np.array([-1.0, -1.0, 0.0,  0.0, 0.0,
@@ -45,6 +47,19 @@ class DowGlImage(QtOpenGLWidgets.QOpenGLWidget):
     }
     """
 
+  class ListGenerator(object):
+    def __init__(self, files : list, gen_tex_func):
+      self.__texture = None
+      self.__next_texture = queue.Queue(2)
+      self.__func = gen_tex_func
+      self.index = 0
+      self.__files = files
+      self.__last_index = self.index - 1
+      self.running = True
+
+    def start(self):
+      self.__thread.start()
+
   def __init__(self, parent = None):
     QtOpenGLWidgets.QOpenGLWidget.__init__(self, parent)
     self.context = QtGui.QOpenGLContext()
@@ -54,6 +69,10 @@ class DowGlImage(QtOpenGLWidgets.QOpenGLWidget):
     self.__texture_generator = None
     self.__player = None
     self.__is_video = False
+    self.__index = 0
+    self.__draw_timer = QtCore.QTimer()
+    self.__draw_timer.setTimerType(QtCore.Qt.TimerType.PreciseTimer)
+    self.__draw_timer.timeout.connect(self.__DrawUpdate)
 
   def __CreateShader(self, shader_type, source):
     shader = QtOpenGL.QOpenGLShader(shader_type)
@@ -83,7 +102,6 @@ class DowGlImage(QtOpenGLWidgets.QOpenGLWidget):
 
   def __DrawUpdate(self):
     self.update()
-    pass
 
   def __image_stream(self, filename):
     image = cv2.imread(str(filename), cv2.IMREAD_UNCHANGED)
@@ -95,6 +113,11 @@ class DowGlImage(QtOpenGLWidgets.QOpenGLWidget):
 
     while True:
       yield tex
+
+  def __GetTexture(self, file : str):
+    image = cv2.imread(file, cv2.IMREAD_UNCHANGED)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGBA)
+    return self.__CreateTexture(image)
 
   def __video_stream(self, filename):
     video = cv2.VideoCapture(str(filename))
@@ -133,15 +156,19 @@ class DowGlImage(QtOpenGLWidgets.QOpenGLWidget):
   @QtCore.Slot(str)
   def SetImage(self, filename : str):
     self.__is_video = False
-    # if self.__texture_generator != None:
-    #   tex = next(self.__texture_generator)
-    #   tex.destroy()
     self.__texture_generator = self.__image_stream(filename)
 
   @QtCore.Slot(str)
   def SetVideo(self, filename):
     self._is_video = True
     self.__texture_generator = self.__video_stream(filename)
+
+  @QtCore.Slot(list)
+  def SetImageList(self, file_list : list):
+    pass
+
+  def NextFromList(self):
+    pass
 
   def Clear(self):
     self.__texture_generator = None
@@ -181,9 +208,6 @@ class DowGlImage(QtOpenGLWidgets.QOpenGLWidget):
     self.__mesh_buffer.release()
     self.__vao.release()
 
-    self.__draw_timer = QtCore.QTimer()
-    self.__draw_timer.setTimerType(QtCore.Qt.TimerType.PreciseTimer)
-    self.__draw_timer.timeout.connect(self.__DrawUpdate)
     self.__draw_timer.start(1000 / 30)
 
   def resizeGL(self, w, h):
@@ -227,35 +251,10 @@ class DowGlImage(QtOpenGLWidgets.QOpenGLWidget):
         self.__texture_generator = None
         self.__is_video = False
 
+  @QtCore.Slot()
   def cleanUpGl(self):
-    self.context.makeCurrent(self.context.surface())
+    self.context.currentContext()
     self.__mesh_buffer.destroy()
     self.__vao.destroy()
     del self.__program
     self.__program = None
-    self.context.doneCurrent()
-    pass
-
-class MainWindow(QtWidgets.QWidget):
-  def __init__(self):
-    super().__init__()
-    self.widget1 = DowGlImage(self)
-    self.widget2 = DowGlImage(self)
-    self.button = QtWidgets.QPushButton("Test")
-    self.button.clicked.connect(self.__click)
-    mainLayout = QtWidgets.QHBoxLayout()
-    mainLayout.addWidget(self.widget1)
-    mainLayout.addWidget(self.widget2)
-    mainLayout.addWidget(self.button)
-    self.setLayout(mainLayout)
-
-  @QtCore.Slot()
-  def __click(self):
-    pass
-
-if __name__ == "__main__":
-    app = QtWidgets.QApplication()
-    widget = MainWindow()
-    widget.resize(800, 720)
-    widget.show()
-    app.exec_()

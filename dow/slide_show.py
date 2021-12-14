@@ -1,11 +1,9 @@
 import sys
 import pathlib
 from PySide6 import QtCore, QtWidgets, QtGui
-from classes.Config import DowConfig
-from classes.Database import DowDatabase
-from classes.MimeType import DowMimeType
-from classes.GlImage2 import DowGlImage
-from classes.SlideShow import DowSlideShow
+from classes import DowConfig
+from classes import DowDatabase
+from classes import DowSlideShowManager
 
 class MainWidget(QtWidgets.QWidget):
   def __init__(self, app):
@@ -18,30 +16,14 @@ class MainWidget(QtWidgets.QWidget):
     else:
       print("No db")
 
-    self.__slide_view = DowGlImage(self)
-    self.__slide_label = QtWidgets.QLabel("Test")
-    self.__slide_label.setFixedHeight(30)
+    self.setLayout(QtWidgets.QVBoxLayout())
+    self.layout().setContentsMargins(QtCore.QMargins(0,0,0,0))
+    self.__slide_manager = DowSlideShowManager(self.__config, self.__db, pathlib.Path("slide_script_1.json"), "1.wav", self.__OnSlideEnd)
+    self.layout().addWidget(self.__slide_manager)
 
-    self.__slide_label.setStyleSheet("QLabel { color : blue; font-size : 32px; }")
-    self.__slide_layout = QtWidgets.QVBoxLayout()
-    self.__slide_space = QtWidgets.QWidget()
-    self.__slide_layout.setContentsMargins(QtCore.QMargins(0,0,0,0))
-    self.__slide_layout.addWidget(self.__slide_label)
-    self.__slide_layout.addWidget(self.__slide_space)
-    
-    self.__slide_layout.setAlignment(self.__slide_label, QtCore.Qt.AlignHCenter)
-    self.__slide_view.setLayout(self.__slide_layout)
-    main_layout = QtWidgets.QVBoxLayout()
-    main_layout.setContentsMargins(QtCore.QMargins(0,0,0,0))
-    main_layout.addWidget(self.__slide_view)
-    self.setLayout(main_layout)
-    self.__engine = DowSlideShow(self.__config, 
-                                 self.__db, 
-                                 pathlib.Path("slide_script_1.json"), 
-                                 self.__slide_view, 
-                                 self.__slide_label,
-                                 "1.wav")
-    self.__engine.OnSlideShowEnd.connect(self.__OnSlideShowEnd)
+  @QtCore.Slot()
+  def __OnSlideEnd(self):
+    exit(0)
 
   def keyPressEvent(self, event : QtGui.QKeyEvent):
     super(MainWidget, self).keyPressEvent(event)
@@ -49,16 +31,12 @@ class MainWidget(QtWidgets.QWidget):
       pass
     else:
       exit(0)
-  
-  @QtCore.Slot()
-  def __OnSlideShowEnd(self):
-    exit(0)
 
 if __name__ == "__main__":
   app = QtWidgets.QApplication(sys.argv)
   widget = MainWidget(app)
-  widget.resize(200, 200)
-  #widget.showFullScreen()
+  widget.resize(800, 800)
+  widget.showFullScreen()
   widget.show()
 
   sys.exit(app.exec())

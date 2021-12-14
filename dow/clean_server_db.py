@@ -13,7 +13,7 @@ download_dir = pathlib.Path(config.ROOT_DIR).joinpath(config.DOWNLOAD_FOLDER)
 sankaku = DowSankaku(config.SAN_USER, config.SAN_PASSWORD, download_dir, config.SAN_USER_TAG)
 pixiv = DowPixiv(download_dir, config.PIXIV_TOKEN)
 
-proc = []
+procs = []
 
 def file_in_db(module, file):
   return True

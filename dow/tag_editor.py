@@ -1,11 +1,11 @@
 import sys
 import pathlib
 from PySide6 import QtCore, QtWidgets, QtGui
-from classes.TagEditor import DowTagEditor
-from classes.Config import DowConfig
-from classes.Database import DowDatabase
-from classes.MimeType import DowMimeType
-from classes.GlImage2 import DowGlImage
+from classes import DowTagEditor
+from classes import DowConfig
+from classes import DowDatabase
+from classes import DowMimeType
+from classes import DowGlImage
 
 class MainWidget(QtWidgets.QWidget):
   def __init__(self, app):

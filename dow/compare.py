@@ -2,9 +2,9 @@ import sys
 import pathlib
 import threading
 from PySide6 import QtCore, QtWidgets, QtGui, QtOpenGL
-from classes.MimeType import DowMimeType
-from classes.GlImage2 import DowGlImage
-from classes.Config import DowConfig
+from classes import DowMimeType
+from classes import DowGlImage
+from classes import DowConfig
 
 class MainWidget(QtWidgets.QWidget):
   def __init__(self, app):

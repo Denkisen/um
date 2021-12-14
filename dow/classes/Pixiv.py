@@ -101,5 +101,5 @@ class DowPixiv():
     return str (file[0].id)
 
   def DeleteBookmark(self, file):
-    print(f"Delete bookmark {str(file[1].id)}")
+    print(f"Delete bookmark {str(file[0].id)}")
     self.__client.delete_bookmark(file[0].id)
