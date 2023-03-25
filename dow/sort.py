@@ -1,10 +1,11 @@
 from classes.Config import DowConfig
 from classes.Database import DowDatabase
 import pathlib
+from collections import OrderedDict
 
 conf = DowConfig(pathlib.Path(".").joinpath("config.json"))
 db = DowDatabase(conf.ROOT_DIR, conf.DB_NAME)
-tagdict = dict()
+tagdict = OrderedDict()
 
 for line in pathlib.Path(conf.ROOT_DIR).joinpath(conf.MAP_NAME).open("r"):
   if ':' in line:

@@ -1,6 +1,7 @@
 import requests
 import time
 import pathlib
+from bs4 import BeautifulSoup
 
 class DowSankaku():
   __url = "https://chan.sankakucomplex.com"
@@ -60,35 +61,29 @@ class DowSankaku():
     resp = self.__get_request(f"/?tags={self.__search_tags}&page={self.__page}")
     self.__files = []
     if resp.status_code == 200:
-      for line in resp.text.split("\n"):
-        if "thumb blacklisted" in line:
+      for item in BeautifulSoup(resp.text, 'html.parser').find(id="post-list").find_all("div", {"class": "content"})[0].find_all("span", {"class": "thumb"}):
+        url = item.a.get("href")
+        if "get.sankaku.plus" in url:
+          continue
+        name = [item.img.get("src").split("/")[-1].split("?")[0]]
+        tags = " ".join(item.img.get("title").replace("'", "''").split(" ")[:-4])
+        mini = item.img.get("src")
           #url, name, tags, mini
-          spt = str(line).split('"')
-          self.__files.append([spt[3], 
-                              [spt[9].split("/")[-1]], 
-                              " ".join(spt[11].replace("'", "''").split(" ")[:-4]),
-                              spt[9]])
+        self.__files.append([url, name, tags, mini])
     
     print("Page" + str(self.__page))
     self.__page += 1
 
-  def __load_image_page(self, file):
+  def __get_hires_image_url(self, file):
     resp = self.__get_request(file[0])
     if resp.status_code == 200:
-      begin = str(resp.text).find("<div id=stats>")
-      end = str(resp.text).find("</div>", begin)
-      block = str(resp.text)[begin:end]
-      lines = block.split("\n")
-      url = ""
-      for line in lines:
-        name = file[1][0].split(".")[0]
-        if "highres" in line and name in line:
-          url = line.split('"')[1].replace("amp;", "")
-          ext = url.split(".")[-1].split("?")[0]
-          file[1][0] = name + "." + ext
-          file.append(url)
-          break
-      return file
+      bs = BeautifulSoup(resp.text, 'html.parser')
+      t = bs.find(id="highres").get("href")
+      suffix = t.split("/")[-1].split("?")[0].split(".")[1]
+      fn = file[1][0].split(".")
+      fn[1] = suffix
+      file[1][0] = ".".join(fn)
+      file.append(t)
   
   def GetNextPage(self):
     self.__load_next_page()
@@ -99,7 +94,7 @@ class DowSankaku():
 
   def GetFile(self, index): # url, list of names, tags
     if len(self.__files) > index:
-      self.__files[index] = self.__load_image_page(self.__files[index])
+      self.__get_hires_image_url(self.__files[index])
       return self.__files[index]
     else:
       return None

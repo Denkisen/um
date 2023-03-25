@@ -19,4 +19,5 @@ class DowConfig():
     self.WHITE_LIST = conf["WHITE_LIST"]
     self.ADD_FOLDER = conf["ADD_FOLDER"]
     self.UNSORTED_FOLDER = conf["UNSORTED_FOLDER"]
+    self.DB_TRIE = conf["DB_TRIE"]
     f.close()

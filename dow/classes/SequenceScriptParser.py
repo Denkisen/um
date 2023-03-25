@@ -62,6 +62,13 @@ class DowSequenceScriptParser(DowSequenceScriptParserSignals):
 
         self.__files.append(p)
 
+  def __add_file_if_image(self, file, file_list):
+    if file.suffix in DowMimeType("").all_formats_suffix_list:
+      file_list.add(str(file))
+      return True
+    else:
+      return False
+
   def __GetFiles(self, file_list : list, count : int):
     files = set()
     res_files = []
@@ -69,19 +76,39 @@ class DowSequenceScriptParser(DowSequenceScriptParserSignals):
     for f in file_list:
       p = pathlib.Path(f)
 
+      if f == "*":
+        records = self.__db.SelectAll()
+        if len(records) > 0:
+          min_one = False
+          for r in records:
+            p = pathlib.Path(r[1]).joinpath(r[0])
+            if p.exists():
+              files.add(str(p))
+              min_one = True
+
+          if min_one:
+            continue
+
       if p.exists():
         #File Path
-        if p.is_file() and p.suffix in DowMimeType("").image_formats_suffix_list:
-          files.add(str(p))
+        if p.is_file() and self.__add_file_if_image(p, files):
           continue
         #Folder Path
         if p.is_dir():
           for d in p.iterdir():
             tf = p.joinpath(d)
-            if tf.suffix in DowMimeType("").image_formats_suffix_list:
-              files.add(str(tf))
+            self.__add_file_if_image(tf, files)
 
           continue
+  
+      #Folder
+      p = pathlib.Path(self.__config.ROOT_DIR).joinpath(f)
+      if p.exists() and p.is_dir():
+        for d in p.iterdir():
+          tf = p.joinpath(d)
+          self.__add_file_if_image(tf, files)
+
+        continue
 
       #File Name
       records = self.__db.SelectAllFilesLike(f)
@@ -104,20 +131,14 @@ class DowSequenceScriptParser(DowSequenceScriptParserSignals):
 
         if min_one:
           continue
-      #Folder
-      p = pathlib.Path(self.__config.ROOT_DIR).joinpath(f)
-      if p.exists() and p.is_dir():
-        for d in p.iterdir():
-          tf = p.joinpath(d)
-          if tf.suffix in DowMimeType("").image_formats_suffix_list:
-            files.add(str(tf))
-
-        continue
 
     if len(files) > 0:
-      fs = random.sample(list(files), min(count, len(files)))
-      for f in fs:
-        res_files.append(pathlib.Path(f))
+      max_len = min(count, len(files))
+      while len(res_files) < max_len:
+        fs = random.sample(list(files), 1)
+        pa = pathlib.Path(fs[0])
+        if not pa in res_files:
+          res_files.append(pa)
 
     return res_files
 

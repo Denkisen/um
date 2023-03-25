@@ -80,8 +80,8 @@ class DowTagEditor():
       pathlib.Path(self.__config.ROOT_DIR).joinpath("ToDelete").mkdir(parents=True, exist_ok=True)
       f.rename(pathlib.Path(self.__config.ROOT_DIR).joinpath("ToDelete").joinpath(f.name))
       print(f"delete: {self.__files_widget.model.itemFromIndex(index).text()}")
-      self.__files_widget.model.removeRow(index)
       self.__next_button.clicked.emit()
+      self.__files_widget.model.removeRow(index.row())
 
   @QtCore.Slot()
   def __next_button_click(self):

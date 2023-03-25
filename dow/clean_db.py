@@ -13,7 +13,7 @@ if files is None or len(files) == 0:
 
 for line in files:
   name, path, tags, features = line
-  path = str(path).replace("nice3", "nice4")
+  path = str(path).replace("nice5", "nice6")
   if not pathlib.Path(path).joinpath(name).exists():
     db.Delete(name)
   else:

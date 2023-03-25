@@ -79,7 +79,17 @@ class DowPixiv():
   def DownloadFile(self, file):
     ill = file[0]
     print("Download File: %d" % ill.id)
-    self.__download_request(ill)
+    tryes = 3
+    while tryes > 0:
+      try:
+        self.__download_request(ill)
+        break
+      except Exception as e:
+        print(e)
+
+    if tryes <= 0:
+      return False
+    
     result = True
     for s in file[1]:
       dow_dir = pathlib.Path(self.__download_dir)

@@ -1,6 +1,6 @@
 from classes.Config import DowConfig
 from classes.Database import DowDatabase
-from classes.Sankaku2 import DowSankaku
+from classes.Sankaku import DowSankaku
 from classes.Pixiv import DowPixiv
 from classes.Worker import DowWorker
 from classes.MimeType import DowMimeType
@@ -58,7 +58,7 @@ def p_file_in_db(module, file):
   global db
   global p_skip_state
   name = module.GetShortFileName(file)
-  if name == "61666908":
+  if name == "99301793":
    p_skip_state = False
    return True
 
@@ -87,5 +87,3 @@ for proc in procs:
 
 for proc in procs:
   proc.join()
-
-#FixVideoWorker(sankaku)

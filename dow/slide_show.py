@@ -18,7 +18,7 @@ class MainWidget(QtWidgets.QWidget):
 
     self.setLayout(QtWidgets.QVBoxLayout())
     self.layout().setContentsMargins(QtCore.QMargins(0,0,0,0))
-    self.__slide_manager = DowSlideShowManager(self.__config, self.__db, pathlib.Path("slide_script_1.json"), "1.wav", self.__OnSlideEnd)
+    self.__slide_manager = DowSlideShowManager(self.__config, self.__db, pathlib.Path("scripts/slide_script_2.json"), "1.wav", self.__OnSlideEnd)
     self.layout().addWidget(self.__slide_manager)
 
   @QtCore.Slot()
@@ -36,7 +36,9 @@ if __name__ == "__main__":
   app = QtWidgets.QApplication(sys.argv)
   widget = MainWidget(app)
   widget.resize(800, 800)
+  # widget.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+  # widget.showMaximized()
   widget.showFullScreen()
-  widget.show()
+  #widget.show()
 
   sys.exit(app.exec())
